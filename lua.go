@@ -22,6 +22,7 @@ func CreateFileUserdata(L *lua.LState) int {
 	f := &File{
 		C: Config{
 			path: opt.CheckString("path", "access.log"),
+			backup: CheckBackupByTable(opt , "backup" , "off"),
 		},
 	}
 

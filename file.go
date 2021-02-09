@@ -1,17 +1,81 @@
 package file
 
 import (
+	"fmt"
 	pub "github.com/edunx/rock-public-go"
 	"os"
+	"time"
 )
 
+func (self *File) filename( now time.Time ) string {
+
+	if self.C.backup == "off" { return self.C.path }
+	if self.C.backup == "day" {
+		return fmt.Sprintf("%s.%d-%d-%d" , self.C.path , now.Year() , now.Month() , now.Day())
+	}
+
+	if self.C.backup == "hour" {
+		return fmt.Sprintf("%s.%d-%d-%d.%d" , self.C.path , now.Year() , now.Month() , now.Day() , now.Hour())
+	}
+
+	return self.C.path
+}
+
+func (self *File) backup( now time.Time ) {
+	pub.Out.Err("start .. backup , time: %v" , now)
+
+	filename := self.filename(now )
+	file, err := os.OpenFile(filename , os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
+	if err != nil {
+		pub.Out.Err("file backup fail , err: %v" , err)
+		return
+	}
+
+	old := self.Fd
+	self.Fd = file
+	old.Close()
+	pub.Out.Err("backup succeed , time: %v" , now)
+}
+
+func (self *File) timer() {
+	if self.C.backup == "off" { return }
+	var sleep *time.Ticker
+	var tk *time.Ticker
+
+	if self.C.backup == "day" {
+		sleep = time.NewTicker(time.Duration(DAY - (time.Now().Unix() - TIMESTAMP )  % DAY) * time.Second)
+		tk = time.NewTicker(time.Second * DAY)
+		goto RUN
+	}
+
+	if self.C.backup == "hour" {
+		sleep = time.NewTicker(time.Duration(HOUR - (time.Now().Unix() - TIMESTAMP )  % HOUR) * time.Second)
+		tk = time.NewTicker(time.Second * HOUR)
+		goto RUN
+	}
+
+	return
+
+RUN:
+	now := <-sleep.C
+	self.backup( now )
+
+	for now = range tk.C {
+		self.backup( now )
+	}
+}
+
 func (self *File) Start() error {
-	file, err := os.OpenFile(self.C.path, os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
+	filename := self.filename( time.Now() )
+
+	file, err := os.OpenFile(filename , os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
 	if err != nil {
 		return err
 	}
 
 	self.Fd = file
+	go self.timer()
+
 	return nil
 }
 
@@ -35,18 +99,21 @@ func (self *File) Push(v interface{}) {
 	str, ok := v.(string)
 	if ok {
 		self.Fd.WriteString(str)
+		self.Fd.WriteString("\n")
 		return
 	}
 
 	bytes, ok := v.([]byte)
 	if ok {
 		self.Fd.Write(bytes)
+		self.Fd.WriteString("\n")
 		return
 	}
 
 	msg, ok := v.(pub.Message)
 	if ok {
 		self.Fd.Write(msg.Byte())
+		self.Fd.WriteString("\n")
 		return
 	}
 
