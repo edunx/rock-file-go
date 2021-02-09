@@ -9,8 +9,9 @@ const (
 )
 
 type Config struct {
-	path string
+	path   string
 	backup string
+	warp   string
 }
 
 type File struct {

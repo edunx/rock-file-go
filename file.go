@@ -95,27 +95,33 @@ func (self *File) Reload() {
 }
 
 func (self *File) Push(v interface{}) {
+	var str string
+	var bytes []byte
+	var msg pub.Message
 
 	str, ok := v.(string)
 	if ok {
 		self.Fd.WriteString(str)
-		self.Fd.WriteString("\n")
-		return
+		goto DONE
 	}
 
-	bytes, ok := v.([]byte)
+	bytes, ok = v.([]byte)
 	if ok {
 		self.Fd.Write(bytes)
-		self.Fd.WriteString("\n")
-		return
+		goto DONE
 	}
 
-	msg, ok := v.(pub.Message)
+	msg, ok = v.(pub.Message)
 	if ok {
 		self.Fd.Write(msg.Byte())
-		self.Fd.WriteString("\n")
-		return
+		goto DONE
 	}
 
 	pub.Out.Err("file type error")
+	return
+
+DONE:
+	if self.C.warp == "\r\n" || self.C.warp == "\n" || self.C.warp == "\r" {
+		self.Fd.WriteString(self.C.warp)
+	}
 }
