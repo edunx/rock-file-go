@@ -1,6 +1,8 @@
 package file
 
-import "os"
+import (
+	"os"
+)
 
 const (
 	TIMESTAMP = 1609430400
@@ -17,4 +19,5 @@ type Config struct {
 type File struct {
 	C  Config
 	Fd *os.File
+	name string
 }

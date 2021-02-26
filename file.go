@@ -12,11 +12,19 @@ func (self *File) filename( now time.Time ) string {
 
 	if self.C.backup == "off" { return self.C.path }
 	if self.C.backup == "day" {
-		return fmt.Sprintf("%s.%d-%d-%d" , self.C.path , now.Year() , now.Month() , now.Day() + 1)
+		name := fmt.Sprintf("%s.%d-%d-%d" , self.C.path , now.Year() , now.Month() , now.Day())
+		if name == self.name {
+			return fmt.Sprintf("%s.%d-%d-%d" , self.C.path , now.Year() , now.Month() , now.Day() + 1)
+		}
+		return name
 	}
 
 	if self.C.backup == "hour" {
-		return fmt.Sprintf("%s.%d-%d-%d.%d" , self.C.path , now.Year() , now.Month() , now.Day() , now.Hour() + 1)
+		name := fmt.Sprintf("%s.%d-%d-%d.%d" , self.C.path , now.Year() , now.Month() , now.Day() , now.Hour())
+		if name == self.name {
+			return fmt.Sprintf("%s.%d-%d-%d.%d" , self.C.path , now.Year() , now.Month() , now.Day() , now.Hour() + 1)
+		}
+		return name
 	}
 
 	return self.C.path
