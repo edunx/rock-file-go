@@ -3,6 +3,7 @@ package file
 import (
 	"fmt"
 	pub "github.com/edunx/rock-public-go"
+	tp "github.com/edunx/rock-transport-go"
 	"os"
 	"time"
 )
@@ -11,11 +12,11 @@ func (self *File) filename( now time.Time ) string {
 
 	if self.C.backup == "off" { return self.C.path }
 	if self.C.backup == "day" {
-		return fmt.Sprintf("%s.%d-%d-%d" , self.C.path , now.Year() , now.Month() , now.Day())
+		return fmt.Sprintf("%s.%d-%d-%d" , self.C.path , now.Year() , now.Month() , now.Day() + 1)
 	}
 
 	if self.C.backup == "hour" {
-		return fmt.Sprintf("%s.%d-%d-%d.%d" , self.C.path , now.Year() , now.Month() , now.Day() , now.Hour())
+		return fmt.Sprintf("%s.%d-%d-%d.%d" , self.C.path , now.Year() , now.Month() , now.Day() , now.Hour() + 1)
 	}
 
 	return self.C.path
@@ -24,7 +25,7 @@ func (self *File) filename( now time.Time ) string {
 func (self *File) backup( now time.Time ) {
 	pub.Out.Err("start .. backup , time: %v" , now)
 
-	filename := self.filename(now )
+	filename := self.filename( now )
 	file, err := os.OpenFile(filename , os.O_CREATE|os.O_RDWR|os.O_APPEND, os.ModeAppend|os.ModePerm)
 	if err != nil {
 		pub.Out.Err("file backup fail , err: %v" , err)
@@ -111,7 +112,7 @@ func (self *File) Push(v interface{}) {
 		goto DONE
 	}
 
-	msg, ok = v.(pub.Message)
+	msg, ok = v.(tp.Message)
 	if ok {
 		self.Fd.Write(msg.Byte())
 		goto DONE
@@ -124,4 +125,11 @@ DONE:
 	if self.C.warp == "\r\n" || self.C.warp == "\n" || self.C.warp == "\r" {
 		self.Fd.WriteString(self.C.warp)
 	}
+}
+
+func(self *File) Type() string {
+	return "file"
+}
+
+func (self *File) Proxy(info string , v interface{}) {
 }

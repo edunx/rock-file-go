@@ -12,10 +12,19 @@
 
 # 调用
 ```golang
-    //满足 pub.Transport 接口
-    transport := pub.CheckTransportByTable("transport" , opt)
+    import (
+        lfile "github.com/edunx/rock-file-go"
+        tp    "github.com/edunx/rock-transport-go"
+    )
 
-    // 写入
-    transport.Push( msg )
+    //注入 lua api
+    lfile.LuaInjectionApi(L , rock)
+    
+    //满足 transport tunnel 接口
+
+    //获取对象 
+    obj :=  tp.CheckTunnelUserData(L , idx)
+
+    obj.Push( msg )
 
 ```
