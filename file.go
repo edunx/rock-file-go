@@ -98,7 +98,7 @@ func (self *File) Reload() {
 func (self *File) Push(v interface{}) {
 	var str string
 	var bytes []byte
-	var msg pub.Message
+	var msg tp.Message
 
 	str, ok := v.(string)
 	if ok {
