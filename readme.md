@@ -6,7 +6,7 @@
     local ud = rock.file{
         path = "access.log" ,
         backup = "day" , -- day , hour , off 自动分割文件
-        autowrap = "\n", --\n, \r\n , "" 自动添加换行符号
+        warp = "\n", --\n, \r\n , "" 自动添加换行符号
     }
 ```
 

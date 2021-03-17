@@ -23,7 +23,7 @@ func CreateFileUserdata(L *lua.LState) int {
 		C: Config{
 			path: opt.CheckString("path", "access.log"),
 			backup: CheckBackupByTable(opt , "backup" , "off"),
-			warp: opt.CheckString("autowrap" , ""),
+			warp: opt.CheckString("warp" , ""),
 		},
 	}
 
