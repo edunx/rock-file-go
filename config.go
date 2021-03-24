@@ -1,6 +1,7 @@
 package file
 
 import (
+	"github.com/edunx/lua"
 	"os"
 )
 
@@ -17,7 +18,9 @@ type Config struct {
 }
 
 type File struct {
-	C  Config
-	Fd *os.File
+	lua.Super
+
+	C    Config
+	Fd   *os.File
 	name string
 }

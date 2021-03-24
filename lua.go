@@ -4,21 +4,8 @@ import (
 	"github.com/edunx/lua"
 )
 
-const (
-	MT string = "ROCK_FILE_GO_MT"
-)
-
-func LuaInjectApi(L *lua.LState, parent *lua.LTable) {
-	mt := L.NewTypeMetatable(MT)
-	L.SetField(mt, "__index", L.NewFunction(get))
-	L.SetField(mt, "__newindex", L.NewFunction(set))
-
-	L.SetField(parent, "file", L.NewFunction(CreateFileUserdata))
-}
-
-func CreateFileUserdata(L *lua.LState) int {
-	opt := L.CheckTable(1)
-
+func createFileUserdata(L *lua.LState , args *lua.Args) lua.LValue {
+	opt := args.CheckTable(L , 1)
 	f := &File{
 		C: Config{
 			path: opt.CheckString("path", "access.log"),
@@ -29,23 +16,35 @@ func CreateFileUserdata(L *lua.LState) int {
 
 	if e := f.Start(); e != nil {
 		L.RaiseError(" file start fail , err: %v", e)
-		return 0
+		return lua.LNil
 	}
 
-	ud := L.NewUserDataByInterface(f , MT)
-
-	L.Push(ud)
-	return 1
+	return f.ToLightUserData(L)
 }
 
-func get(L *lua.LState) int {
-	return 0
+
+func (self *File) ToLightUserData(L *lua.LState) *lua.LightUserData {
+	return L.NewLightUserData( self )
 }
 
-func set(L *lua.LState) int {
-	return 0
+func (self *File) debug(L *lua.LState , args *lua.Args) lua.LValue {
+	n := args.Len()
+	if n <= 0 {
+		return lua.LNil
+	}
+
+	for i:=1;i<=n;i++{
+		self.Push(args.CheckString(L , i))
+	}
+
+	return lua.LTrue
 }
 
-func (self *File) ToUserData(L *lua.LState) *lua.LUserData {
-	return L.NewUserDataByInterface(self, MT)
+func (self *File) Index(L *lua.LState , key string) lua.LValue {
+	if key == "debug" { return lua.NewGFunction( self.debug ) }
+	return lua.LNil
+}
+
+func LuaInjectApi(L *lua.LState, parent *lua.LTable) {
+	L.SetField(parent , "file" , lua.NewGFunction( createFileUserdata ))
 }
