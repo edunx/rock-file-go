@@ -24,7 +24,8 @@ func createFileUserdata(L *lua.LState , args *lua.Args) lua.LValue {
 
 
 func (self *File) ToLightUserData(L *lua.LState) *lua.LightUserData {
-	return L.NewLightUserData( self )
+	ud := &lua.LightUserData{ Value: self }
+	return ud
 }
 
 func (self *File) debug(L *lua.LState , args *lua.Args) lua.LValue {
@@ -34,7 +35,7 @@ func (self *File) debug(L *lua.LState , args *lua.Args) lua.LValue {
 	}
 
 	for i:=1;i<=n;i++{
-		self.Push(args.CheckString(L , i))
+		self.Write(args.CheckString(L , i))
 	}
 
 	return lua.LTrue

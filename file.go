@@ -2,6 +2,7 @@ package file
 
 import (
 	"fmt"
+	"github.com/edunx/lua"
 	pub "github.com/edunx/rock-public-go"
 	tp "github.com/edunx/rock-transport-go"
 	"os"
@@ -92,21 +93,10 @@ func (self *File) Close() {
 	self.Fd.Close()
 }
 
-func (self *File) Reload() {
-	self.Fd.Close()
-	err := self.Start()
-	if err != nil {
-		pub.Out.Err("reload file fail , err: %v" , err)
-		return
-	}
-
-	pub.Out.Err("reload file succeed")
-}
-
-func (self *File) Push(v interface{}) {
+func (self *File) Write( v interface{} ) error {
 	var str string
 	var bytes []byte
-	var msg tp.Message
+	var msg lua.Message
 
 	str, ok := v.(string)
 	if ok {
@@ -127,16 +117,21 @@ func (self *File) Push(v interface{}) {
 	}
 
 	pub.Out.Err("file type error")
-	return
 
 DONE:
 	if self.C.warp == "\r\n" || self.C.warp == "\n" || self.C.warp == "\r" {
 		self.Fd.WriteString(self.C.warp)
 	}
+
+	return nil
 }
 
-func(self *File) Type() string {
+func (self *File) Type() string {
 	return "file"
+}
+
+func (self *File) Name() string {
+	return self.name
 }
 
 func (self *File) Proxy(info string , v interface{}) {
