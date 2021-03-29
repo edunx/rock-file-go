@@ -89,8 +89,9 @@ func (self *File) Start() error {
 	return nil
 }
 
-func (self *File) Close() {
+func (self *File) Close() error {
 	self.Fd.Close()
+	return nil
 }
 
 func (self *File) Write( v interface{} ) error {
