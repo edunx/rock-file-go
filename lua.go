@@ -46,6 +46,6 @@ func (self *File) Index(L *lua.LState , key string) lua.LValue {
 	return lua.LNil
 }
 
-func LuaInjectApi(L *lua.LState, parent *lua.LTable) {
-	L.SetField(parent , "file" , lua.NewGFunction( createFileUserdata ))
+func LuaInjectApi(L *lua.LState, parent *lua.UserKV) {
+	parent.Set("file" , lua.NewGFunction( createFileUserdata ))
 }
